@@ -1,0 +1,39 @@
+@startuml
+left to right direction
+
+actor "Client" as client
+actor "Директор" as director
+usecase "CMC шлюз" as sms_gateway
+rectangle {
+usecase "US_A01:Регистрация пользователя" as US_A01
+usecase "Подтверждение номера телефона" as phone_verification
+usecase "Ошибка Подтверждения номера телефона" as phone_error
+usecase "Выбор автомойки" as US_S01
+usecase "Выбор города" as city_selection
+usecase "Выбор адреса" as address_selection
+usecase "Выбор по поиску" as search_selection
+usecase "Оплата услуги" as US_P01
+usecase "Выбор способа оплаты" as payment_method
+usecase "Оплата" as payment
+usecase "Предоставление статистики о работе мойщиков" as stats
+usecase "Отображение графиков (mini-bil)" as charts
+usecase "Выгрузка CSV" as csv_export
+} 
+usecase "Платёжная система" as payment_system
+usecase "1С система" as system_1c
+client -->US_A01
+US_A01 --> phone_verification
+US_A01--> phone_error
+phone_verification-->sms_gateway
+client -->US_S01
+US_S01-->city_selection
+US_S01-->address_selection
+US_S01-->search_selection
+client -->US_P01
+US_P01-->payment
+payment-->payment_system
+payment-->system_1c
+US_P01-->payment_method
+director-->stats
+stats-->charts
+stats-->csv_export
