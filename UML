@@ -37,3 +37,4 @@ US_P01-->payment_method
 director-->stats
 stats-->charts
 stats-->csv_export
+@enduml
