@@ -1,0 +1,658 @@
+openapi: 3.0.0
+info:
+  title: Car Management API
+  version: 1.0.0
+  description: API для управления автомобилями
+
+paths:
+  /api/cars:
+    post:
+      summary: Создать новый автомобиль
+      description: Create a new car
+      tags:
+        - Cars
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vin
+                - make
+                - model
+                - year
+                - userId
+              properties:
+                vin:
+                  type: string
+                  example: "W1M4ECHV1LT025155"
+                make:
+                  type: string
+                  example: "Toyota"
+                model:
+                  type: string
+                  example: "Vitz"
+                year:
+                  type: integer
+                  format: int32
+                  example: 2011
+                gosNumber:
+                  type: string
+                  example: "X007XX65"
+                bodyType:
+                  type: string
+                  enum: ["Sedan", "Hatchback", "SUV", "Coupe", "Convertible", "Wagon", "Van", "Truck"]
+                  example: "Sedan"
+                userId:
+                  type: string
+                  example: "3ef7f446-00b1-4386-b5da-b054"
+      responses:
+        '201':
+          description: Car created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: "Car created successfully"
+                  data:
+                    $ref: '#/components/schemas/Car'
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Car with this VIN already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateVINError'
+        '404':
+          description: User with specified ID does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotFoundError'
+        '422':
+          description: Invalid government registration number format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidGosNumberError'
+
+  /api/cars/{id}:
+    get:
+      summary: Получить автомобиль по ID
+      description: Get car by ID
+      tags:
+        - Cars
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "lb7587ad-e851-4902-88eb-b5ace0d7fb"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/Car'
+        '400':
+          description: Invalid car ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidIdFormatError'
+        '403':
+          description: You don't have permission to access this car
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessDeniedError'
+        '404':
+          description: Car with specified ID not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarNotFoundError'
+
+    put:
+      summary: Полное обновление автомобиля
+      description: Update entire car
+      tags:
+        - Cars
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "lb7587ad-e851-4902-88eb-b5ace0d7fb"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vin
+                - make
+                - model
+                - year
+                - userId
+                - gosNumber
+                - bodyType
+              properties:
+                vin:
+                  type: string
+                  example: "W1M4ECHV1LT025155"
+                make:
+                  type: string
+                  example: "Toyota"
+                model:
+                  type: string
+                  example: "Vitz"
+                year:
+                  type: integer
+                  format: int32
+                  example: 2011
+                gosNumber:
+                  type: string
+                  example: "X007XX65"
+                bodyType:
+                  type: string
+                  enum: ["Sedan", "Hatchback", "SUV", "Coupe", "Convertible", "Wagon", "Van", "Truck"]
+                  example: "Sedan"
+                userId:
+                  type: string
+                  example: "3ef7f446-00b1-4386-b5da-b054"
+      responses:
+        '200':
+          description: Car updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Car updated successfully"
+                  data:
+                    $ref: '#/components/schemas/Car'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '404':
+          description: Car with specified ID not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarNotFoundError'
+        '409':
+          description: VIN already assigned to another car
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VINConflictError'
+        '412':
+          description: Car was modified by another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreconditionFailedError'
+
+    patch:
+      summary: Частичное обновление автомобиля
+      description: Partially update car
+      tags:
+        - Cars
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "lb7587ad-e851-4902-88eb-b5ace0d7fb"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vin:
+                  type: string
+                  example: "W1M4ECHV1LT025155"
+                make:
+                  type: string
+                  example: "Toyota"
+                model:
+                  type: string
+                  example: "Vitz"
+                year:
+                  type: integer
+                  format: int32
+                  example: 2011
+                gosNumber:
+                  type: string
+                  example: "X007XX65"
+                bodyType:
+                  type: string
+                  enum: ["Sedan", "Hatchback", "SUV", "Coupe", "Convertible", "Wagon", "Van", "Truck"]
+                  example: "Sedan"
+                userId:
+                  type: string
+                  example: "3ef7f446-00b1-4386-b5da-b054"
+      responses:
+        '200':
+          description: Car partially updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Car partially updated successfully"
+                  data:
+                    $ref: '#/components/schemas/Car'
+        '400':
+          description: No valid fields provided for update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoFieldsToUpdateError'
+        '404':
+          description: Car with specified ID not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarNotFoundError'
+        '409':
+          description: Government number already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateGosNumberError'
+        '422':
+          description: Invalid year
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidYearError'
+
+    delete:
+      summary: Удалить автомобиль по ID
+      description: Delete car by ID
+      tags:
+        - Cars
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "lb7587ad-e851-4902-88eb-b5ace0d7fb"
+      responses:
+        '204':
+          description: Car deleted successfully
+        '403':
+          description: Car cannot be deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteForbiddenError'
+        '404':
+          description: Car with specified ID not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarNotFoundError'
+        '410':
+          description: Car was already deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlreadyDeletedError'
+        '423':
+          description: Car is locked and cannot be deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarLockedError'
+
+components:
+  schemas:
+    Car:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "lb7587ad-e851-4902-88eb-b5ace0d7fb"
+        vin:
+          type: string
+          example: "W1M4ECHV1LT025155"
+        make:
+          type: string
+          example: "Toyota"
+        model:
+          type: string
+          example: "Vitz"
+        year:
+          type: integer
+          format: int32
+          example: 2011
+        gosNumber:
+          type: string
+          example: "X007XX65"
+        bodyType:
+          type: string
+          enum: ["Sedan", "Hatchback", "SUV", "Coupe", "Convertible", "Wagon", "Van", "Truck"]
+          example: "Sedan"
+        userId:
+          type: string
+          example: "3ef7f446-00b1-4386-b5da-b054"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    # Error Schemas
+    ValidationError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          example: "Validation failed"
+        details:
+          type: array
+          items:
+            type: string
+          example: ["VIN is required", "Make is required"]
+
+    DuplicateVINError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 409
+        code:
+          type: string
+          example: "DUPLICATE_VIN"
+        message:
+          type: string
+          example: "Car with this VIN already exists"
+
+    UserNotFoundError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        code:
+          type: string
+          example: "USER_NOT_FOUND"
+        message:
+          type: string
+          example: "User with specified ID does not exist"
+
+    InvalidGosNumberError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 422
+        code:
+          type: string
+          example: "INVALID_GOS_NUMBER"
+        message:
+          type: string
+          example: "Invalid government registration number format"
+
+    InvalidIdFormatError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        code:
+          type: string
+          example: "INVALID_ID_FORMAT"
+        message:
+          type: string
+          example: "Invalid car ID format"
+
+    AccessDeniedError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 403
+        code:
+          type: string
+          example: "ACCESS_DENIED"
+        message:
+          type: string
+          example: "You don't have permission to access this car"
+
+    CarNotFoundError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        code:
+          type: string
+          example: "CAR_NOT_FOUND"
+        message:
+          type: string
+          example: "Car with specified ID not found"
+
+    VINConflictError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 409
+        code:
+          type: string
+          example: "VIN_CONFLICT"
+        message:
+          type: string
+          example: "VIN already assigned to another car"
+
+    PreconditionFailedError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 412
+        code:
+          type: string
+          example: "PRECONDITION_FAILED"
+        message:
+          type: string
+          example: "Car was modified by another user"
+
+    NoFieldsToUpdateError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        code:
+          type: string
+          example: "NO_FIELDS_TO_UPDATE"
+        message:
+          type: string
+          example: "No valid fields provided for update"
+
+    InvalidYearError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 422
+        code:
+          type: string
+          example: "INVALID_YEAR"
+        message:
+          type: string
+          example: "Year must be a valid number between 1900 and current year"
+
+    DuplicateGosNumberError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 409
+        code:
+          type: string
+          example: "DUPLICATE_GOS_NUMBER"
+        message:
+          type: string
+          example: "Government number already in use"
+
+    DeleteForbiddenError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 403
+        code:
+          type: string
+          example: "DELETE_FORBIDDEN"
+        message:
+          type: string
+          example: "Car cannot be deleted (has active reservations or transactions)"
+
+    AlreadyDeletedError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 410
+        code:
+          type: string
+          example: "ALREADY_DELETED"
+        message:
+          type: string
+          example: "Car was already deleted"
+
+    CarLockedError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 423
+        code:
+          type: string
+          example: "CAR_LOCKED"
+        message:
+          type: string
+          example: "Car is locked and cannot be deleted"
+
+  responses:
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 500
+              code:
+                type: string
+                example: "INTERNAL_SERVER_ERROR"
+              message:
+                type: string
+                example: "Internal server error"
+
+    ServiceUnavailable:
+      description: Service temporarily unavailable
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 503
+              code:
+                type: string
+                example: "SERVICE_UNAVAILABLE"
+              message:
+                type: string
+                example: "Service temporarily unavailable"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 401
+              code:
+                type: string
+                example: "UNAUTHORIZED"
+              message:
+                type: string
+                example: "Authentication required"
+
+    RateLimitExceeded:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 429
+              code:
+                type: string
+                example: "RATE_LIMIT_EXCEEDED"
+              message:
+                type: string
+                example: "Too many requests"
